@@ -159,8 +159,10 @@
 			onAnimationProgress: function(){},
 
 			// Function - Will fire on animation completion.
-			onAnimationComplete: function(){}
+			onAnimationComplete: function(){},
 
+      // Extra spacing between label and point.
+      spaceLabelPoint: 5
 		}
 	};
 
@@ -999,7 +1001,7 @@
 						title: ChartElements[0].label,
 						chart: this.chart,
 						ctx: this.chart.ctx,
-						custom: this.options.customTooltips
+						custom: this.options.customTooltips,
 					}).draw();
 
 				} else {
@@ -1787,7 +1789,7 @@
 			for (i=0;i<this.valuesCount;i++){
 				// 5px to space the text slightly out - similar to what we do in the draw function.
 				pointPosition = this.getPointPosition(i, largestPossibleRadius);
-				textWidth = this.ctx.measureText(template(this.templateString, { value: this.labels[i] })).width + 5;
+				textWidth = this.ctx.measureText(template(this.templateString, { value: this.labels[i] })).width + this.spaceLabelPoint;
 				if (i === 0 || i === this.valuesCount/2){
 					// If we're at index zero, or exactly the middle, we're at exactly the top/bottom
 					// of the radar chart, so text will be aligned centrally, so we'll half it and compare
@@ -1852,9 +1854,7 @@
 
 		getIndexAngle : function(index){
 			var angleMultiplier = (Math.PI * 2) / this.valuesCount;
-			// Start from the top instead of right, so remove a quarter of the circle
-
-			return index * angleMultiplier - (Math.PI/2);
+			return index * angleMultiplier - (Math.PI/3);
 		},
 		getPointPosition : function(index, distanceFromCenter){
 			var thisAngle = this.getIndexAngle(index);
@@ -1884,18 +1884,20 @@
 								ctx.closePath();
 								ctx.stroke();
 							} else{
-								ctx.beginPath();
-								for (var i=0;i<this.valuesCount;i++)
-								{
-									pointPosition = this.getPointPosition(i, this.calculateCenterOffset(this.min + (index * this.stepValue)));
-									if (i === 0){
-										ctx.moveTo(pointPosition.x, pointPosition.y);
-									} else {
-										ctx.lineTo(pointPosition.x, pointPosition.y);
-									}
-								}
-								ctx.closePath();
-								ctx.stroke();
+                if (!this.scaleShowLineOuterOnly || (index == this.yLabels.length - 1)) {
+                  ctx.beginPath();
+                  for (var i=0;i<this.valuesCount;i++)
+                  {
+                    pointPosition = this.getPointPosition(i, this.calculateCenterOffset(this.min + (index * this.stepValue)));
+                    if (i === 0){
+                      ctx.moveTo(pointPosition.x, pointPosition.y);
+                    } else {
+                      ctx.lineTo(pointPosition.x, pointPosition.y);
+                    }
+                  }
+                  ctx.closePath();
+                  ctx.stroke();
+                }
 							}
 						}
 						if(this.showLabels){
@@ -1931,7 +1933,7 @@
 							ctx.closePath();
 						}
 						// Extra 3px out for some label spacing
-						var pointLabelPosition = this.getPointPosition(i, this.calculateCenterOffset(this.max) + 5);
+						var pointLabelPosition = this.getPointPosition(i, this.calculateCenterOffset(this.max) + this.spaceLabelPoint);
 						ctx.font = fontString(this.pointLabelFontSize,this.pointLabelFontStyle,this.pointLabelFontFamily);
 						ctx.fillStyle = this.pointLabelFontColor;
 
@@ -1958,6 +1960,14 @@
 						} else {
 							ctx.textBaseline = 'top';
 						}
+            
+            // Hack
+            if (i == 1 || i == 4) {
+              ctx.textBaseline = 'middle';
+            }
+            if (i == 2 || i == 5) {
+              ctx.textAlign = 'center';
+            }
 
 						ctx.fillText(this.labels[i], pointLabelPosition.x, pointLabelPosition.y);
 					}

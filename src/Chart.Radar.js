@@ -15,6 +15,7 @@
 
 			//Boolean - Whether we show the angle lines out of the radar
 			angleShowLineOut : true,
+      scaleShowLineOuterOnly: false,
 
 			//Boolean - Whether to show labels on the scale
 			scaleShowLabels : false,
@@ -62,8 +63,10 @@
 			datasetFill : true,
 
 			//String - A legend template
-			legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
+			legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>",
 
+      // Extra spacing between label and point.
+      spaceLabelPoint: 5
 		},
 
 		initialize: function(data){
@@ -117,6 +120,8 @@
 						pointPosition = this.scale.getPointPosition(index, this.scale.calculateCenterOffset(dataPoint));
 					}
 					datasetObject.points.push(new this.PointClass({
+            radius : dataset.pointDotRadius || this.options.pointDotRadius,
+            strokeWidth : dataset.pointDotStrokeWidth || this.options.pointDotStrokeWidth,
 						value : dataPoint,
 						label : data.labels[index],
 						datasetLabel: dataset.label,
@@ -177,6 +182,7 @@
 				backdropPaddingY : this.options.scaleBackdropPaddingY,
 				backdropPaddingX: this.options.scaleBackdropPaddingX,
 				lineWidth: (this.options.scaleShowLine) ? this.options.scaleLineWidth : 0,
+        scaleShowLineOuterOnly: this.options.scaleShowLineOuterOnly,
 				lineColor: this.options.scaleLineColor,
 				angleLineColor : this.options.angleLineColor,
 				angleLineWidth : (this.options.angleShowLineOut) ? this.options.angleLineWidth : 0,
@@ -192,7 +198,8 @@
 				ctx : this.chart.ctx,
 				templateString: this.options.scaleLabel,
 				labels: data.labels,
-				valuesCount: data.datasets[0].data.length
+				valuesCount: data.datasets[0].data.length,
+        spaceLabelPoint: this.options.spaceLabelPoint
 			});
 
 			this.scale.setScaleSize();
